@@ -1,0 +1,6 @@
+{
+  "hosts": ["http://elasticdb:9200"],
+  "username": "elastic",
+  "password": "password",
+  "timeout": 60
+}

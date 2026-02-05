@@ -1,0 +1,30 @@
+# Use an official PyTorch CPU image as the parent image.
+# This image is pre-configured with PyTorch and is compatible with modern
+# Linux kernels, which will resolve the "executable stack" error.
+# The version 2.3.0-cpu is a stable, recent release.
+FROM pytorch/pytorch:2.3.0-cpu
+
+# Specify the Python version explicitly for clarity and to ensure a
+# compatible environment for all other dependencies.
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the requirements file to the container
+COPY requirements.txt .
+
+# Install any necessary Python dependencies from the requirements file.
+# We're already using a PyTorch-specific base image, so this will
+# install other packages like uvicorn and any other non-PyTorch dependencies.
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code to the container
+COPY . .
+
+# Expose the port that the embedding service will run on
+EXPOSE 8001
+
+# Run the service using uvicorn
+CMD ["uvicorn", "embedding_service:app", "--host", "0.0.0.0", "--port", "8001"]

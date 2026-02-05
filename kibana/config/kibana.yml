@@ -1,0 +1,26 @@
+# Kibana Configuration
+
+# Configure the Elasticsearch URL
+elasticsearch.hosts: ["http://elasticdb:9200"]
+
+# Set the Kibana server host to allow external access (optional)
+server.host: "0.0.0.0"
+
+# Optional: Customize the server port
+server.port: 5601
+
+# Optional: Disable security for development (align with Elasticsearch setup)
+# elasticsearch.username: "elastic"
+# elasticsearch.password: ""
+
+# Optional: Disable TLS verification if Elasticsearch is not using HTTPS
+elasticsearch.ssl.verificationMode: "none"
+
+# Optional: Customize the base path if behind a proxy
+# server.basePath: "/kibana"
+
+# Optional: Logging level (set to "debug" for detailed logs during development)
+logging.root.level: "info"
+
+# Optional: Persistent storage for saved objects and dashboards
+# path.data: /usr/share/kibana/data

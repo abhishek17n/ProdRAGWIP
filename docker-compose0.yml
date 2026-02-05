@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Embedding Service
+  embedding_service:
+    build: ./embedding_service
+    container_name: embedding_service
+    ports:
+      - "8001:8001"
+    networks:
+      - rag_network
+
+  # Elasticsearch Service
+  elasticdb:
+    build: ./elasticdb
+    container_name: elasticdb
+    ports:
+      - "9200:9200"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - rag_network
+    
+  kibana:
+    build: ./kibana
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS="http://elasticdb:9200"
+      - SERVER_HOST=0.0.0.0
+      - XPACK_SECURITY_ENABLED=false
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml 
+    depends_on:
+      - elasticdb
+    networks:
+      - rag_network
+  
+  streamlit_agent:
+    build:
+      context: ./agent
+    container_name: streamlit_agent
+    ports:
+      - "8502:8502"
+    depends_on:
+      - elasticdb
+      - embedding_service
+    environment:
+      - OPENAI_API_KEY
+      - SERPAPI_API_KEY 
+      - GOOGLE_API_KEY 
+    networks:
+      - rag_network
+    entrypoint: ["/bin/sh", "-c", "sleep 60 && ./agent.sh"]
+    
+  # Streamlit Service for Interaction
+  streamlit_service:
+    build: ./elastic_streamlit
+    container_name: elastic_streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - embedding_service
+      - elasticdb
+    networks:
+      - rag_network
+    entrypoint: ["/bin/sh", "-c", "sleep 60 && ./start_streamlit.sh"]
+  # Elasticsearch Index Creation Service
+
+networks:
+  rag_network:
+    driver: bridge
+
+volumes:
+  es_data:
+    driver: local
+
+
+ 

@@ -1,0 +1,17 @@
+langchain==0.3.13
+openai==1.58.1
+elasticsearch==8.9.0
+streamlit==1.25.0
+python-dotenv 
+google-search-results==2.4.2
+google-serp-api
+langchain-google-genai==2.0.0
+langchain-openai==0.2.14
+crewai
+crewai[tools]
+crewai-tools
+litellm
+requests>=2.31.0 
+beautifulsoup4>=4.12.3
+langchain-anthropic==0.2.0
+numexpr
