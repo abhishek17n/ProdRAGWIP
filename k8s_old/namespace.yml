@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prodragwip
+  labels:
+    name: prodragwip
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prodragwip-config
+  namespace: prodragwip
+data:
+  # Elasticsearch Configuration
+  ELASTICSEARCH_HOST: "elasticdb-service"
+  ELASTICSEARCH_PORT: "9200"
+  
+  # Embedding Service Configuration
+  EMBEDDING_SERVICE_HOST: "embedding-service"
+  EMBEDDING_SERVICE_PORT: "8001"
+  
+  # Streamlit Configuration
+  STREAMLIT_SERVER_PORT: "8501"
+  
+  # Environment
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Resource constraints for e2-medium (2 CPU, 4GB RAM)
+  PYTHONUNBUFFERED: "1"

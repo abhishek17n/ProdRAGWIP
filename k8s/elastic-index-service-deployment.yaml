@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: elastic-index-creation
+spec:
+  template:
+    spec:
+      containers:
+      - name: index-creation
+        image: us-central1-docker.pkg.dev/project-916342a2-cb14-4046-bc7/ollamacloud/index_creation_service:latest
+        env:
+        - name: ELASTICSEARCH_HOST
+          value: "http://elasticdb:9200"   # use service name
+      restartPolicy: OnFailure
+  backoffLimit: 4

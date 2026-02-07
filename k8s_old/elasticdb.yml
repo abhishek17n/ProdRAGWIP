@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticdb
+  template:
+    metadata:
+      labels:
+        app: elasticdb
+    spec:
+      containers:
+        - name: elasticdb
+          image: us-central1-docker.pkg.dev/project-916342a2-cb14-4046-bc7/ollamacloud/elasticdb:latest
+          ports:
+            - containerPort: 9200
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: es-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticdb
+spec:
+  selector:
+    app: elasticdb
+  ports:
+    - port: 9200
+      targetPort: 9200
+  type: ClusterIP

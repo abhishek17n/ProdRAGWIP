@@ -17,7 +17,7 @@ load_dotenv()
 # Embedding Service, Elasticsearch URLs, and OpenAI API Key
 #EMBEDDING_SERVICE_URL = "http://172.17.0.4:8001/embed"
 #ELASTICSEARCH_URL = "http://172.17.0.1:9200/documents/_doc" 
-EMBEDDING_SERVICE_URL = "http://embedding_service:8001/embed"
+EMBEDDING_SERVICE_URL = "http://embedding-service:8001/embed"
 ELASTICSEARCH_URL = "http://elasticdb:9200/documents/_doc" 
  # Replace 'documents' with your index name
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

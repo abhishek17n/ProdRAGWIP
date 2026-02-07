@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   # Embedding Service
-  embedding_service:
-    build: ./embedding_service
-    container_name: embedding_service
+  embedding-service:
+    build: ./embedding-service
+    container_name: embedding-service
     ports:
       - "8001:8001"
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
     ports:
       - "8501:8501"
     depends_on:
-      - embedding_service
+      - embedding-service
       - elasticdb
     restart: unless-stopped
     networks:

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embedding_service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embedding_service
+  template:
+    metadata:
+      labels:
+        app: embedding_service
+    spec:
+      containers:
+        - name: embedding_service
+          image: us-central1-docker.pkg.dev/project-916342a2-cb14-4046-bc7/ollamacloud/embedding_service:latest
+          ports:
+            - containerPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: embedding_service
+spec:
+  selector:
+    app: embedding_service
+  ports:
+    - port: 8001
+      targetPort: 8001
+  type: ClusterIP
