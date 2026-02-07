@@ -1,0 +1,86 @@
+name: Build & Deploy to GKE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: project-916342a2-cb14-4046-bc7
+  GAR_LOCATION: us-central1
+  GAR_REPO: rag-images
+  GKE_CLUSTER: prodragwip-cluster
+  GKE_ZONE: us-central1-a
+  SA_EMAIL: github-actions-sa@project-916342a2-cb14-4046-bc7.iam.gserviceaccount.com
+
+jobs:
+  build-and-deploy:
+    permissions:
+      contents: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (WIF)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: >-
+            projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+          service_account: ${{ env.SA_EMAIL }}
+          project_id: ${{ env.PROJECT_ID }}   # Recommended: helps token scoping
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      # Build & Push Images
+      - name: Build & push embedding-service
+        run: |
+          IMAGE=" ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/embedding:${{ github.sha }}"
+          docker build -t "$IMAGE" ./embedding_service
+          docker push "$IMAGE"
+          echo "EMBEDDING_IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Build & push streamlit
+        run: |
+          IMAGE=" ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/streamlit:${{ github.sha }}"
+          docker build -t "$IMAGE" ./elastic_streamlit
+          docker push "$IMAGE"
+          echo "STREAMLIT_IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      # (Add elastic_index_service block here if needed)
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+            --zone ${{ env.GKE_ZONE }} \
+            --project ${{ env.PROJECT_ID }}
+
+      - name: Deploy to GKE
+        run: |
+          # Stricter sed patterns (match typical image: line more precisely)
+          sed -i -E "s|(image:[[:space:]]+)[^[:space:]]+|\1${{ env.EMBEDDING_IMAGE }}|" k8s/embedding-service-deployment.yaml
+          sed -i -E "s|(image:[[:space:]]+)[^[:space:]]+|\1${{ env.STREAMLIT_IMAGE }}|" k8s/streamlit-deployment.yaml
+
+          echo "Updated manifests:"
+          cat k8s/embedding-service-deployment.yaml | grep image:
+          cat k8s/streamlit-deployment.yaml | grep image:
+
+          kubectl apply -f k8s/elasticsearch-deployment.yaml
+          kubectl apply -f k8s/embedding-service-deployment.yaml
+          kubectl apply -f k8s/streamlit-deployment.yaml
+
+          # Rollout status + basic debug
+          kubectl rollout status deployment/embedding-service --timeout=300s || echo "Rollout embedding failed - check logs"
+          kubectl rollout status deployment/streamlit --timeout=300s || echo "Rollout streamlit failed - check logs"
+
+          # Quick status dump for debugging
+          kubectl get pods -l app=embedding-service
+          kubectl get pods -l app=streamlit
