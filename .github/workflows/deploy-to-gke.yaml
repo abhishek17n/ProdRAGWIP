@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: project-916342a2-cb14-4046-bc7
   GAR_LOCATION: us-central1
-  GAR_REPO: rag-images
+  GAR_REPO: ollamacloud
   GKE_CLUSTER: prodragwip-cluster
   GKE_ZONE: us-central1-a
   SA_EMAIL: github-actions-sa@project-916342a2-cb14-4046-bc7.iam.gserviceaccount.com
@@ -43,7 +43,8 @@ jobs:
       # Build & Push Images
       - name: Build & push embedding-service
         run: |
-          IMAGE=" ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/embedding:${{ github.sha }}"
+          IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/embedding:${{ github.sha }}"
+          echo "Building and pushing: $IMAGE"
           docker build -t "$IMAGE" ./embedding_service
           docker push "$IMAGE"
           echo "EMBEDDING_IMAGE=$IMAGE" >> $GITHUB_ENV
