@@ -51,7 +51,8 @@ jobs:
 
       - name: Build & push streamlit
         run: |
-          IMAGE=" ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/streamlit:${{ github.sha }}"
+          IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/streamlit:${{ github.sha }}"
+          echo "Building streamlit: $IMAGE"
           docker build -t "$IMAGE" ./elastic_streamlit
           docker push "$IMAGE"
           echo "STREAMLIT_IMAGE=$IMAGE" >> $GITHUB_ENV
